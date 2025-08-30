@@ -29,12 +29,6 @@ jobs:
         with:
           path: "src"
 
-      - name: "'build' Depo Kontrolü"
-        uses: actions/checkout@v4.2.2
-        with:
-          ref: "builds"
-          path: "builds"
-
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
         with:
@@ -44,7 +38,7 @@ jobs:
       - name: Android SDK Ayarla
         uses: android-actions/setup-android@v3.2.2
 
-      - name: Build Klasörünü Temizle
+      - name: Build Klasörü İçindekileri Temizle
         run: rm -rf $GITHUB_WORKSPACE/builds/* || true
 
       - name: Eklentileri Derle ve Kopyala
@@ -52,7 +46,6 @@ jobs:
           cd $GITHUB_WORKSPACE/src
           chmod +x gradlew
           ./gradlew make makePluginsJson
-          mkdir -p $GITHUB_WORKSPACE/builds
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
           cp build/plugins.json $GITHUB_WORKSPACE/builds
 
