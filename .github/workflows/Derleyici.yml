@@ -17,6 +17,9 @@ on:
       - "**/*.png"
       - "**/*.py"
 
+permissions:
+  contents: write # Git push için gerekli
+
 jobs:
   CloudStreamDerleyici:
     runs-on: ubuntu-latest
@@ -58,7 +61,6 @@ jobs:
       - name: Eski Derlemeleri Temizle (Max 5)
         run: |
           cd $GITHUB_WORKSPACE/builds
-          # Klasörleri tarihe göre sırala, 5'ten fazlasını sil
           ls -1d [0-9]* | sort | head -n -5 | xargs -r rm -rf
 
       - name: Derlemeleri Build Branch’e Gönder (Sadece Değişiklik Varsa)
@@ -68,10 +70,22 @@ jobs:
           cd $GITHUB_WORKSPACE/builds
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
+
+          # Eğer build branch boş ise init
+          if [ ! -d .git ]; then
+            git init
+            git remote add origin https://github.com/${{ github.repository }}.git
+            git fetch origin build || true
+            git checkout -b build || git checkout build
+          else
+            git checkout build
+            git pull origin build || true
+          fi
+
           git add -f *
           if git diff-index --quiet HEAD; then
             echo "No changes detected, skipping push."
           else
             git commit -m "$GITHUB_SHA 'nın Derlenmesi"
-            git push https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }} HEAD:build
+            git push https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }} build
           fi
