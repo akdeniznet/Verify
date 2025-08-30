@@ -71,15 +71,18 @@ jobs:
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
 
-          # Eğer build branch boş ise init
+          # Git init değilse başlat
           if [ ! -d .git ]; then
             git init
             git remote add origin https://github.com/${{ github.repository }}.git
-            git fetch origin build || true
-            git checkout -b build || git checkout build
-          else
+          fi
+
+          # build branch varsa checkout et yoksa oluştur
+          if git ls-remote --exit-code --heads origin build; then
+            git fetch origin build
             git checkout build
-            git pull origin build || true
+          else
+            git checkout -b build
           fi
 
           git add -f *
