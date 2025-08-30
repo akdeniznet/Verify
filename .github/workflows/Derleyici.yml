@@ -33,7 +33,7 @@ jobs:
           path: "builds"
 
       - name: Eski Derlemeleri Temizle
-        run: rm $GITHUB_WORKSPACE/builds/*.cs3 || true
+        run: rm -f $GITHUB_WORKSPACE/builds/*.cs3 || true
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
@@ -52,13 +52,13 @@ jobs:
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
           cp build/plugins.json $GITHUB_WORKSPACE/builds
 
-      - name: Derlemeleri Yükle
+      - name: Derlemeleri Build Branch’e Gönder
         env:
-          GITHUB_PAT: ${{ secrets.GITHUB_PAT }} # Secrets’a eklemeyi unutma
+          GITHUB_PAT: ${{ secrets.GITHUB_PAT }} # Write izni olan token
         run: |
           cd $GITHUB_WORKSPACE/builds
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
           git add -f *.cs3 plugins.json
           git commit -m "$GITHUB_SHA 'nın Derlenmesi" || echo "No changes to commit"
-          git push https://x-access-token:${GITHUB_PAT}@github.com/${{ github.repository }} HEAD:build
+          git push https://x-access-token:${GITHUB_PAT}@github.com/${{ github.repository }} HEAD:build --force
