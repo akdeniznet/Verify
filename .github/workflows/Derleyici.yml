@@ -1,5 +1,5 @@
 # Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
-name: CloudStream Derleyicix
+name: CloudStreamDerleyicix
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
@@ -35,9 +35,6 @@ jobs:
           ref: "builds"
           path: "builds"
 
-      - name: Eski Derlemeleri Temizle
-        run: rm $GITHUB_WORKSPACE/builds/*.cs3 || true
-
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
         with:
@@ -47,20 +44,19 @@ jobs:
       - name: Android SDK Ayarla
         uses: android-actions/setup-android@v3.2.2
 
-      - name: Eklentileri Derle
+      - name: Build Klasörünü Temizle
+        run: rm -rf $GITHUB_WORKSPACE/builds/* || true
+
+      - name: Eklentileri Derle ve Kopyala
         run: |
           cd $GITHUB_WORKSPACE/src
           chmod +x gradlew
           ./gradlew make makePluginsJson
+          mkdir -p $GITHUB_WORKSPACE/builds
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
           cp build/plugins.json $GITHUB_WORKSPACE/builds
 
-      - name: Eski Derlemeleri Temizle (Max 5)
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          ls -1d [0-9]* | sort | head -n -5 | xargs -r rm -rf
-
-      - name: Derlemeleri Build Branch’e Gönder (Sadece Değişiklik Varsa)
+      - name: Derlemeleri Build Branch’e Gönder (Force Push)
         env:
           AKDENIZ: ${{ secrets.AKDENIZ }} # Repo secrets'ta token olmalı
         run: |
@@ -74,18 +70,11 @@ jobs:
             git remote add origin https://github.com/${{ github.repository }}.git
           fi
 
-          # build branch varsa checkout et yoksa oluştur
-          if git ls-remote --exit-code --heads origin build; then
-            git fetch origin build
-            git checkout build
-          else
-            git checkout -b build
-          fi
+          # build branch varsa checkout et, yoksa oluştur
+          git fetch origin build || true
+          git checkout -B build origin/build || git checkout -B build
 
+          # Force commit ve push
           git add -f *
-          if git diff-index --quiet HEAD; then
-            echo "No changes detected, skipping push."
-          else
-            git commit -m "$GITHUB_SHA 'nın Derlenmesi"
-            git push https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }} build
-          fi
+          git commit -m "$GITHUB_SHA 'nın Derlenmesi" || echo "No changes to commit"
+          git push -f https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }} build
