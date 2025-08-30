@@ -47,12 +47,18 @@ jobs:
       - name: Eklentileri Derle
         run: |
           cd $GITHUB_WORKSPACE/src
-          chmod +x gradlew
+          chmod +x ./gradlew
           ./gradlew make makePluginsJson
-          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
-          cp build/plugins.json $GITHUB_WORKSPACE/builds
 
-          - name: Eski Derlemeleri Temizle (Max 5)
+          # Versiyonlu derleme adı (SHA + tarih)
+          VERSION=$(date +%Y%m%d%H%M%S)
+          mkdir -p $GITHUB_WORKSPACE/builds/$VERSION
+
+          # Derlenen .cs3 ve plugins.json dosyalarını versiyon klasörüne kopyala
+          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds/$VERSION
+          cp build/plugins.json $GITHUB_WORKSPACE/builds/$VERSION
+
+      - name: Eski Derlemeleri Temizle (Max 5)
         run: |
           cd $GITHUB_WORKSPACE/builds
           ls -1d [0-9]* | sort | head -n -5 | xargs -r rm -rf
