@@ -51,17 +51,19 @@ open class ContentX : ExtractorApi() {
             ?: throw ErrorLoadingException("vidExtract is null")
         val m3uLink = vidExtract.replace("\\", "")
 
-        // 🔹 newExtractorLink kullanımı
+        // 🔹 newExtractorLink kullanımı CloudStream yeni sürüm uyumlu
         callback.invoke(
             newExtractorLink(
                 name = this.name,
                 url = m3uLink,
-                referer = url,
-                quality = Qualities.Unknown.value,
-                isM3u8 = true,
-                headers = mapOf(
-                    "Referer" to url,
-                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
+                extra = mapOf(
+                    "referer" to url,
+                    "isM3u8" to true,
+                    "quality" to Qualities.Unknown.value,
+                    "headers" to mapOf(
+                        "Referer" to url,
+                        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                    )
                 )
             )
         )
@@ -77,12 +79,14 @@ open class ContentX : ExtractorApi() {
                 newExtractorLink(
                     name = this.name,
                     url = dublajLink,
-                    referer = url,
-                    quality = Qualities.Unknown.value,
-                    isM3u8 = true,
-                    headers = mapOf(
-                        "Referer" to url,
-                        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
+                    extra = mapOf(
+                        "referer" to url,
+                        "isM3u8" to true,
+                        "quality" to Qualities.Unknown.value,
+                        "headers" to mapOf(
+                            "Referer" to url,
+                            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                        )
                     )
                 )
             )
