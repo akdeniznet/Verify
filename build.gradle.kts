@@ -11,8 +11,8 @@ buildscript {
 
     dependencies {
         classpath("com.android.tools.build:gradle:8.7.3")
-        // Cloudstream gradle plugin (sabit sürüm kullan)
-        classpath("com.github.recloudstream:gradle:0.1.3")
+        // Cloudstream gradle plugin (commit hash ile sabitledik)
+        classpath("com.github.recloudstream:gradle:cce1b8d84d")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
     }
 }
