@@ -103,29 +103,33 @@ open class ContentX : ExtractorApi() {
     /**
      * Türkçe dublaj track'ini işler
      */
-    private suspend fun processDublajTrack(
-        source: String,
-        referer: String,
-        originalUrl: String,
-        callback: (ExtractorLink) -> Unit
-    ) {
-        val iDublaj = Regex(""","([^']+)","Türkçe"""")
-            .find(source)
-            ?.groups?.get(1)?.value
+// ...existing code...
 
-        iDublaj?.let { dublajId ->
-            val dublajSource = app.get("${mainUrl}/source2.php?v=${dublajId}", referer = referer).text
-            
-            val dublajExtract = Regex("""file":"([^"]+)""")
-                .find(dublajSource)
-                ?.groups?.get(1)?.value 
-                ?: throw ErrorLoadingException("dublajExtract bulunamadı")
-            
-            val dublajLink = dublajExtract.replace("\\", "")
+/**
+ * ExtractorLink oluşturur ve callback'e gönderir
+ */
+private fun createExtractorLink(
+    url: String,
+    refererUrl: String,
+    callback: (ExtractorLink) -> Unit
+) {
+    callback.invoke(
+        newExtractorLink(
+            source = this.name,
+            name = this.name,
+            url = url,
+            referer = refererUrl,
+            quality = Qualities.Unknown.value,
+            isM3u8 = true,
+            headers = mapOf(
+                "Referer" to refererUrl,
+                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
+            )
+        )
+    )
+}
 
-            createExtractorLink(dublajLink, originalUrl, callback)
-        }
-    }
+// ...existing code...
 
     /**
      * ExtractorLink oluşturur ve callback'e gönderir
