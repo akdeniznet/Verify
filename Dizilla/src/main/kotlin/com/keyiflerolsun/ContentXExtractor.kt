@@ -38,7 +38,7 @@ open class ContentX : ExtractorApi() {
             if (subUrl in subUrls) return@forEach
             subUrls.add(subUrl)
 
-            subtitleCallback.invoke(
+            subtitleCallback(
                 SubtitleFile(
                     lang = subLang,
                     url = fixUrl(subUrl)
@@ -51,19 +51,17 @@ open class ContentX : ExtractorApi() {
             ?: throw ErrorLoadingException("vidExtract is null")
         val m3uLink = vidExtract.replace("\\", "")
 
-        // 🔹 newExtractorLink kullanımı CloudStream yeni sürüm uyumlu
-        callback.invoke(
-            newExtractorLink(
+        callback(
+            ExtractorLink(
+                source = this.name,
                 name = this.name,
                 url = m3uLink,
-                extra = mapOf(
-                    "referer" to url,
-                    "isM3u8" to true,
-                    "quality" to Qualities.Unknown.value,
-                    "headers" to mapOf(
-                        "Referer" to url,
-                        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-                    )
+                referer = url,
+                quality = Qualities.Unknown.value,
+                isM3u8 = true,
+                headers = mapOf(
+                    "Referer" to url,
+                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
                 )
             )
         )
@@ -75,19 +73,20 @@ open class ContentX : ExtractorApi() {
                 ?: throw ErrorLoadingException("dublajExtract is null")
             val dublajLink = dublajExtract.replace("\\", "")
 
-                callback.invoke(
-                    newExtractorLink(
-                        name = this.name,
-                        url = m3uLink,
-                        referer = url,
-                        isM3u8 = true,
-                        headers = mapOf(
-                            "Referer" to url,
-                            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
-                        )
+            callback(
+                ExtractorLink(
+                    source = this.name,
+                    name = this.name,
+                    url = dublajLink,
+                    referer = url,
+                    quality = Qualities.Unknown.value,
+                    isM3u8 = true,
+                    headers = mapOf(
+                        "Referer" to url,
+                        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
                     )
                 )
-
+            )
         }
     }
 }

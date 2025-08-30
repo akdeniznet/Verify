@@ -88,7 +88,7 @@ subprojects {
         val implementation by configurations
 
         // 🔥 Lokal classes.jar kullan
-        cloudstream(files("libs/classes.jar"))
+        cloudstream(files("Dizilla/libs/classes.jar"))
 
         implementation(kotlin("stdlib"))
         implementation("com.github.Blatzar:NiceHttp:0.4.13")
