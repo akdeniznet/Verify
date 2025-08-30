@@ -23,7 +23,7 @@ open class ContentX : ExtractorApi() {
         Log.d("Kekik_${this.name}", "url » $url")
 
         val iSource = app.get(url, referer = extRef).text
-        val iExtract = Regex("""window\.openPlayer\('([^']+)'""").find(iSource)?.groups?.get(1)?.value 
+        val iExtract = Regex("""window\.openPlayer\('([^']+)'""").find(iSource)?.groups?.get(1)?.value
             ?: throw ErrorLoadingException("iExtract is null")
 
         val subUrls = mutableSetOf<String>()
@@ -47,14 +47,13 @@ open class ContentX : ExtractorApi() {
         }
 
         val vidSource = app.get("${mainUrl}/source2.php?v=${iExtract}", referer = extRef).text
-        val vidExtract = Regex("""file":"([^"]+)""").find(vidSource)?.groups?.get(1)?.value 
+        val vidExtract = Regex("""file":"([^"]+)""").find(vidSource)?.groups?.get(1)?.value
             ?: throw ErrorLoadingException("vidExtract is null")
         val m3uLink = vidExtract.replace("\\", "")
 
-        // newExtractorLink yerine ExtractorLink kullanımı
+        // 🔥 newExtractorLink kullanımı
         callback.invoke(
-            ExtractorLink(
-                source = this.name,
+            newExtractorLink(
                 name = this.name,
                 url = m3uLink,
                 referer = url,
@@ -70,13 +69,12 @@ open class ContentX : ExtractorApi() {
         val iDublaj = Regex(""","([^']+)","Türkçe""").find(iSource)?.groups?.get(1)?.value
         if (iDublaj != null) {
             val dublajSource = app.get("${mainUrl}/source2.php?v=${iDublaj}", referer = extRef).text
-            val dublajExtract = Regex("""file":"([^"]+)""").find(dublajSource)?.groups?.get(1)?.value 
+            val dublajExtract = Regex("""file":"([^"]+)""").find(dublajSource)?.groups?.get(1)?.value
                 ?: throw ErrorLoadingException("dublajExtract is null")
             val dublajLink = dublajExtract.replace("\\", "")
 
             callback.invoke(
-                ExtractorLink(
-                    source = this.name,
+                newExtractorLink(
                     name = this.name,
                     url = dublajLink,
                     referer = url,
