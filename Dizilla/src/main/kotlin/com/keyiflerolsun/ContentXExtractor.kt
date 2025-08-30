@@ -51,7 +51,7 @@ open class ContentX : ExtractorApi() {
             ?: throw ErrorLoadingException("vidExtract is null")
         val m3uLink = vidExtract.replace("\\", "")
 
-        // 🔥 newExtractorLink kullanımı
+        // 🔹 newExtractorLink kullanımı
         callback.invoke(
             newExtractorLink(
                 name = this.name,
