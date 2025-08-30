@@ -76,7 +76,7 @@ subprojects {
 
         // Stubs for all Cloudstream classes
        
-        cloudstream("com.lagradost:cloudstream3:3.4.4") // 3.6.4 yerine daha kararlı bir sürüm
+        cloudstream("com.lagradost:cloudstream3:3.6.4")
 
 
         // these dependencies can include any of those which are added by the app,
