@@ -1,5 +1,5 @@
 # Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
-name: Yenileme
+name: Derleyici
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
@@ -21,13 +21,19 @@ permissions:
   contents: write # Git push için gerekli
 
 jobs:
-  Yenile:
+  Surum:
     runs-on: ubuntu-latest
     steps:
       - name: "'src' Depo Kontrolü"
         uses: actions/checkout@v4.2.2
         with:
           path: "src"
+
+      - name: "'build' Depo Kontrolü"
+        uses: actions/checkout@v4.2.2
+        with:
+          ref: "builds"
+          path: "builds"
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
@@ -38,20 +44,26 @@ jobs:
       - name: Android SDK Ayarla
         uses: android-actions/setup-android@v3.2.2
 
-      - name: Build Klasörünü Tamamen Temizle
-        run: |
-          rm -rf $GITHUB_WORKSPACE/builds
-          mkdir -p $GITHUB_WORKSPACE/builds
-
-      - name: Eklentileri Derle ve Kopyala
+      - name: Eklentileri Derle
         run: |
           cd $GITHUB_WORKSPACE/src
-          chmod +x gradlew
+          chmod +x ./gradlew
           ./gradlew make makePluginsJson
-          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
-          cp build/plugins.json $GITHUB_WORKSPACE/builds
 
-      - name: Derlemeleri Build Branch’e Gönder (Force Push)
+          # Versiyonlu derleme adı (SHA + tarih)
+          VERSION=$(date +%Y%m%d%H%M%S)
+          mkdir -p $GITHUB_WORKSPACE/builds/$VERSION
+
+          # Derlenen .cs3 ve plugins.json dosyalarını versiyon klasörüne kopyala
+          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds/$VERSION
+          cp build/plugins.json $GITHUB_WORKSPACE/builds/$VERSION
+
+      - name: Eski Derlemeleri Temizle (Max 5)
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          ls -1d [0-9]* | sort | head -n -5 | xargs -r rm -rf
+
+      - name: Derlemeleri Build Branch’e Gönder (Sadece Değişiklik Varsa)
         env:
           AKDENIZ: ${{ secrets.AKDENIZ }} # Repo secrets'ta token olmalı
         run: |
@@ -65,11 +77,18 @@ jobs:
             git remote add origin https://github.com/${{ github.repository }}.git
           fi
 
-          # build branch varsa checkout et, yoksa oluştur
-          git fetch origin build || true
-          git checkout -B build origin/build || git checkout -B build
+          # build branch varsa checkout et yoksa oluştur
+          if git ls-remote --exit-code --heads origin build; then
+            git fetch origin build
+            git checkout build
+          else
+            git checkout -b build
+          fi
 
-          # Force commit ve push
           git add -f *
-          git commit -m "$GITHUB_SHA 'nın Derlenmesi" || echo "No changes to commit"
-          git push -f https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }} build
+          if git diff-index --quiet HEAD; then
+            echo "No changes detected, skipping push."
+          else
+            git commit -m "$GITHUB_SHA 'nın Derlenmesi"
+            git push https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }} build
+          fi
