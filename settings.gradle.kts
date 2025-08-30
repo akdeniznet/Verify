@@ -1,6 +1,5 @@
 rootProject.name = "CloudstreamPlugins"
 
-// Bu listeye yazılan klasörler build'e dahil edilmeyecek
 val disabled = listOf("__Temel")
 
 File(rootDir, ".").eachDir { dir ->
@@ -12,6 +11,3 @@ File(rootDir, ".").eachDir { dir ->
 fun File.eachDir(block: (File) -> Unit) {
     listFiles()?.filter { it.isDirectory }?.forEach { block(it) }
 }
-
-// Eğer sadece tek bir projeyi build etmek istersen:
-// include("PluginName")

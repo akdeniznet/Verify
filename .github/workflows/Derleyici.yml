@@ -1,62 +1,55 @@
-# Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
 name: CloudStream Derleyici
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: true
 
 on:
   workflow_dispatch:
   push:
     branches:
       - master
-    paths-ignore:
-      - "**/*.md"
-      - "**/*.yml"
-      - "**/*.jpg"
-      - "**/*.png"
-      - "**/*.py"
 
 jobs:
-  CloudStreamDerleyici:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: "'src' Depo Kontrolü"
-        uses: actions/checkout@master
+      - name: Checkout source
+        uses: actions/checkout@v3
         with:
-          path: "src"
+          path: src
 
-      - name: "'build' Depo Kontrolü"
-        uses: actions/checkout@master
+      - name: Checkout builds
+        uses: actions/checkout@v3
         with:
-          ref: "builds"
-          path: "builds"
+          ref: builds
+          path: builds
 
-      - name: Eski Derlemeleri Temizle
-        run: rm $GITHUB_WORKSPACE/builds/*.cs3 || true
-
-      - name: JDK 23 Ayarla
-        uses: actions/setup-java@v4.6.0
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
-          distribution: adopt
+          distribution: temurin
           java-version: 23
 
-      - name: Android SDK Ayarla
-        uses: android-actions/setup-android@v3.2.2
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Eklentileri Derle
+      - name: Build Cloudstream classes.jar
         run: |
           cd $GITHUB_WORKSPACE/src
           chmod +x gradlew
+          ./gradlew build
+          mkdir -p libs
+          cp build/libs/classes.jar libs/classes.jar
+
+      - name: Build Plugins
+        run: |
+          cd $GITHUB_WORKSPACE/src
           ./gradlew make makePluginsJson
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
           cp build/plugins.json $GITHUB_WORKSPACE/builds
 
-      - name: Derlemeleri Yükle
+      - name: Commit & Push Builds
         run: |
           cd $GITHUB_WORKSPACE/builds
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
           git add .
-          git commit --amend -m "$GITHUB_SHA 'nın Derlenmesi" || exit 0   # eğer commit edilecek bir şey yoksa hata verme
+          git commit --amend -m "$GITHUB_SHA build" || exit 0
           git push --force

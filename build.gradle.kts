@@ -10,17 +10,14 @@ buildscript {
 
     dependencies {
         classpath("com.android.tools.build:gradle:8.7.3")
-        // Cloudstream gradle plugin (commit hash ile sabit)
-        classpath("com.github.recloudstream:gradle:cce1b8d84d")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
+        classpath("com.github.recloudstream:gradle:cce1b8d84d")
     }
 
-    // 🔥 classpath için JADB fix
     configurations.classpath {
         resolutionStrategy.eachDependency {
             if (requested.group == "com.github.vidstige" && requested.name == "jadb") {
                 useVersion("v1.2.1")
-                because("jadb master-SNAPSHOT jitpack'te yok, v1.2.1 kullanılmalı")
             }
         }
     }
@@ -33,12 +30,10 @@ allprojects {
         maven("https://jitpack.io")
     }
 
-    // 🔥 normal dependencies için JADB fix
     configurations.all {
         resolutionStrategy.eachDependency {
             if (requested.group == "com.github.vidstige" && requested.name == "jadb") {
                 useVersion("v1.2.1")
-                because("jadb master-SNAPSHOT jitpack'te yok, v1.2.1 kullanılmalı")
             }
         }
     }
@@ -92,10 +87,9 @@ subprojects {
         val cloudstream by configurations
         val implementation by configurations
 
-        // Cloudstream stub - güncel sürüm
-        cloudstream("com.lagradost:cloudstream3:4.5.6")
+        // 🔥 Lokal classes.jar kullan
+        cloudstream(files("libs/classes.jar"))
 
-        // Diğer bağımlılıklar
         implementation(kotlin("stdlib"))
         implementation("com.github.Blatzar:NiceHttp:0.4.13")
         implementation("org.jsoup:jsoup:1.19.1")
@@ -103,7 +97,7 @@ subprojects {
         implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
-        implementation("com.github.vidstige:jadb:v1.2.1") // doğru sürüm
+        implementation("com.github.vidstige:jadb:v1.2.1")
     }
 }
 
