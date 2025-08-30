@@ -1,55 +1,61 @@
 name: CloudStream Derleyici
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
   push:
     branches:
       - master
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.yml"
+      - "**/*.jpg"
+      - "**/*.png"
+      - "**/*.py"
 
 jobs:
-  build:
+  CloudStreamDerleyici:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
+      - name: "'src' Depo Kontrolü"
+        uses: actions/checkout@master
         with:
-          path: src
+          path: "src"
 
-      - name: Checkout builds
-        uses: actions/checkout@v3
+      - name: "'build' Depo Kontrolü"
+        uses: actions/checkout@master
         with:
-          ref: builds
-          path: builds
+          ref: "builds"
+          path: "builds"
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - name: Eski Derlemeleri Temizle
+        run: rm -f $GITHUB_WORKSPACE/builds/*.cs3 || true
+
+      - name: JDK 23 Ayarla
+        uses: actions/setup-java@v4.6.0
         with:
-          distribution: temurin
+          distribution: adopt
           java-version: 23
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Android SDK Ayarla
+        uses: android-actions/setup-android@v3.2.2
 
-      - name: Build Cloudstream classes.jar
+      - name: Eklentileri Derle
         run: |
           cd $GITHUB_WORKSPACE/src
           chmod +x gradlew
-          ./gradlew build
-          mkdir -p libs
-          cp build/libs/classes.jar libs/classes.jar
-
-      - name: Build Plugins
-        run: |
-          cd $GITHUB_WORKSPACE/src
-          ./gradlew make makePluginsJson
+          ./gradlew clean make makePluginsJson
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
           cp build/plugins.json $GITHUB_WORKSPACE/builds
 
-      - name: Commit & Push Builds
+      - name: Derlemeleri Yükle
         run: |
           cd $GITHUB_WORKSPACE/builds
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
           git add .
-          git commit --amend -m "$GITHUB_SHA build" || exit 0
+          git commit --amend -m "$GITHUB_SHA 'nın Derlenmesi" || exit 0
           git push --force

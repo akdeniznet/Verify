@@ -1,18 +1,40 @@
-version = 15
+plugins {
+    id("com.android.library")
+    kotlin("android")
+}
 
-cloudstream {
-    authors     = listOf("keyiflerolsun", "nikyokki")
-    language    = "tr"
-    description = "Dizilla tüm yabancı dizileri ücretsiz olarak Türkçe Dublaj ve altyazılı seçenekleri ile 1080P kalite izleyebileceğiniz yeni nesil yabancı dizi izleme siteniz."
+repositories {
+    google()
+    mavenCentral()
+    maven("https://jitpack.io")
+}
 
-    /**
-     * Status int as the following:
-     * 0: Down
-     * 1: Ok
-     * 2: Slow
-     * 3: Beta only
-    **/
-    status  = 1 // will be 3 if unspecified
-    tvTypes = listOf("TvSeries")
-    iconUrl = "https://www.google.com/s2/favicons?domain=dizilla.club&sz=%size%"
+android {
+    namespace = "com.keyiflerolsun"
+    compileSdk = 35
+    defaultConfig {
+        minSdk = 21
+        targetSdk = 35
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+dependencies {
+    implementation(kotlin("stdlib"))
+    implementation("com.lagradost:cloudstream3:4.5.6")
+    implementation("com.github.Blatzar:NiceHttp:0.4.13")
+    implementation("org.jsoup:jsoup:1.19.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation("com.github.vidstige:jadb:v1.2.1")
 }
