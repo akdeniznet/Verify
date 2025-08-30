@@ -7,6 +7,7 @@ repositories {
     google()
     mavenCentral()
     maven("https://jitpack.io")
+    maven("https://recloudstream.github.io/maven") // 🔥 CloudStream repository
 }
 
 android {
@@ -29,7 +30,11 @@ android {
 
 dependencies {
     implementation(kotlin("stdlib"))
+
+    // CloudStream ana kütüphane
     implementation("com.lagradost:cloudstream3:4.5.6")
+
+    // Diğer bağımlılıklar
     implementation("com.github.Blatzar:NiceHttp:0.4.13")
     implementation("org.jsoup:jsoup:1.19.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.1")
