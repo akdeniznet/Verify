@@ -47,7 +47,7 @@ jobs:
           chmod +x ./gradlew
           ./gradlew make makePluginsJson
 
-          # Versiyonlu derleme adı (SHA ile)
+          # Versiyonlu derleme adı (SHA + tarih)
           VERSION=$(date +%Y%m%d%H%M%S)
           mkdir -p $GITHUB_WORKSPACE/builds/$VERSION
 
@@ -55,9 +55,15 @@ jobs:
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds/$VERSION
           cp build/plugins.json $GITHUB_WORKSPACE/builds/$VERSION
 
+      - name: Eski Derlemeleri Temizle (Max 5)
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          # Klasörleri tarihe göre sırala, 5'ten fazlasını sil
+          ls -1d [0-9]* | sort | head -n -5 | xargs -r rm -rf
+
       - name: Derlemeleri Build Branch’e Gönder (Sadece Değişiklik Varsa)
         env:
-          AKDENIZ: ${{ secrets.AKDENIZ }} # Repo secrets'ta token olmalı
+          GITHUB_PAT: ${{ secrets.GITHUB_PAT }} # Repo secrets'ta token olmalı
         run: |
           cd $GITHUB_WORKSPACE/builds
           git config --local user.email "actions@github.com"
@@ -67,5 +73,4 @@ jobs:
             echo "No changes detected, skipping push."
           else
             git commit -m "$GITHUB_SHA 'nın Derlenmesi"
-            git push https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }} HEAD:build
-          fi
+            git push https://x-access-token:${GITHUB_PAT}@github.com/${{ github.repository }} HEAD:build
