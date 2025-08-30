@@ -52,13 +52,17 @@ jobs:
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
           cp build/plugins.json $GITHUB_WORKSPACE/builds
 
-      - name: Derlemeleri Build Branch’e Gönder
+      - name: Derlemeleri Build Branch’e Gönder (Sadece Değişiklik Varsa)
         env:
-          GITHUB_PAT: ${{ secrets.AKDENIZ }} # Repo secrets'ta token olmalı
+          AKDENIZ: ${{ secrets.AKDENIZ }} # Repo secrets'ta token olmalı
         run: |
           cd $GITHUB_WORKSPACE/builds
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
           git add -f *.cs3 plugins.json
-          git commit -m "$GITHUB_SHA 'nın Derlenmesi" || echo "No changes to commit"
-          git push https://x-access-token:${GITHUB_PAT}@github.com/${{ github.repository }} HEAD:build --force
+          if git diff-index --quiet HEAD; then
+            echo "No changes detected, skipping push."
+          else
+            git commit -m "$GITHUB_SHA 'nın Derlenmesi"
+            git push https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }} HEAD:build
+          fi
