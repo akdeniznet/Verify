@@ -1,40 +1,64 @@
-name: Derleyici
+# Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
+name: CloudStream Derleyici
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - master
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.yml"
+      - "**/*.jpg"
+      - "**/*.png"
+      - "**/*.py"
 
 jobs:
-  build:
+  CloudStreamDerleyici:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
+      - name: "'src' Depo Kontrolü"
+        uses: actions/checkout@v4.2.2
         with:
-          persist-credentials: false  # Önemli: PAT kullanacağız
-          fetch-depth: 0
+          path: "src"
 
-      - name: Setup Java
-        uses: actions/setup-java@v3
+      - name: "'build' Depo Kontrolü"
+        uses: actions/checkout@v4.2.2
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          ref: "builds"
+          path: "builds"
 
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+      - name: Eski Derlemeleri Temizle
+        run: rm $GITHUB_WORKSPACE/builds/*.cs3 || true
 
-      - name: Build Cloudstream Packages
-        run: ./gradlew clean build --refresh-dependencies
+      - name: JDK 17 Ayarla
+        uses: actions/setup-java@v4.6.0
+        with:
+          distribution: adopt
+          java-version: 17
 
-      - name: Push Built Packages
-        env:
-          GITHUB_PAT: ${{ secrets.GITHUB_PAT }} # Önceden repo secrets’a eklemelisin
+      - name: Android SDK Ayarla
+        uses: android-actions/setup-android@v3.2.2
+
+      - name: Eklentileri Derle
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add -f **/*.cs3
-          git commit -m "Otomatik Derleme: $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
-          git push https://x-access-token:${GITHUB_PAT}@github.com/${{ github.repository }} HEAD:main
+          cd $GITHUB_WORKSPACE/src
+          chmod +x ./gradlew
+          ./gradlew make makePluginsJson
+          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
+          cp build/plugins.json $GITHUB_WORKSPACE/builds
+
+      - name: Derlemeleri Yükle
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_PAT }} # Secrets’a eklemeyi unutma
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add -f *.cs3 plugins.json
+          git commit -m "$GITHUB_SHA 'nın Derlenmesi" || echo "No changes to commit"
+          git push https://x-access-token:${GITHUB_PAT}@github.com/${{ github.repository }} HEAD:build
