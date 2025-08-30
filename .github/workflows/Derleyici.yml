@@ -63,7 +63,7 @@ jobs:
 
       - name: Derlemeleri Build Branch’e Gönder (Sadece Değişiklik Varsa)
         env:
-          GITHUB_PAT: ${{ secrets.GITHUB_PAT }} # Repo secrets'ta token olmalı
+          AKDENIZ: ${{ secrets.AKDENIZ }} # Repo secrets'ta token olmalı
         run: |
           cd $GITHUB_WORKSPACE/builds
           git config --local user.email "actions@github.com"
@@ -73,4 +73,5 @@ jobs:
             echo "No changes detected, skipping push."
           else
             git commit -m "$GITHUB_SHA 'nın Derlenmesi"
-            git push https://x-access-token:${GITHUB_PAT}@github.com/${{ github.repository }} HEAD:build
+            git push https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }} HEAD:build
+          fi
