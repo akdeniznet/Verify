@@ -15,6 +15,16 @@ buildscript {
         classpath("com.github.recloudstream:gradle:cce1b8d84d")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
     }
+
+    // 🔥 JADB snapshot fix (classpath bağımlılıkları için)
+    configurations.classpath {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "com.github.vidstige" && requested.name == "jadb") {
+                useVersion("v1.2.1")
+                because("jadb master-SNAPSHOT jitpack'te yok, v1.2.1 kullanılmalı")
+            }
+        }
+    }
 }
 
 allprojects {
@@ -24,12 +34,12 @@ allprojects {
         maven("https://jitpack.io")
     }
 
-    // JADB master-SNAPSHOT yerine v1.2.1 sürümünü zorla
+    // 🔥 JADB snapshot fix (normal bağımlılıklar için)
     configurations.all {
         resolutionStrategy.eachDependency {
             if (requested.group == "com.github.vidstige" && requested.name == "jadb") {
                 useVersion("v1.2.1")
-                because("master-SNAPSHOT jitpack'te yok, v1.2.1 kullanılmalı")
+                because("jadb master-SNAPSHOT jitpack'te yok, v1.2.1 kullanılmalı")
             }
         }
     }
