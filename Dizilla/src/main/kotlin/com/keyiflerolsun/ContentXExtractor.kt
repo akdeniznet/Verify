@@ -75,21 +75,19 @@ open class ContentX : ExtractorApi() {
                 ?: throw ErrorLoadingException("dublajExtract is null")
             val dublajLink = dublajExtract.replace("\\", "")
 
-            callback.invoke(
-                newExtractorLink(
-                    name = this.name,
-                    url = dublajLink,
-                    extra = mapOf(
-                        "referer" to url,
-                        "isM3u8" to true,
-                        "quality" to Qualities.Unknown.value,
-                        "headers" to mapOf(
+                callback.invoke(
+                    newExtractorLink(
+                        name = this.name,
+                        url = m3uLink,
+                        referer = url,
+                        isM3u8 = true,
+                        headers = mapOf(
                             "Referer" to url,
-                            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
                         )
                     )
                 )
-            )
+
         }
     }
 }
