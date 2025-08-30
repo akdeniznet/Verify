@@ -5,18 +5,17 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        // Jitpack repo
         maven("https://jitpack.io")
     }
 
     dependencies {
         classpath("com.android.tools.build:gradle:8.7.3")
-        // Cloudstream gradle plugin (commit hash ile sabitledik)
+        // Cloudstream gradle plugin (commit hash ile sabit)
         classpath("com.github.recloudstream:gradle:cce1b8d84d")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
     }
 
-    // 🔥 JADB snapshot fix (classpath bağımlılıkları için)
+    // 🔥 classpath için JADB fix
     configurations.classpath {
         resolutionStrategy.eachDependency {
             if (requested.group == "com.github.vidstige" && requested.name == "jadb") {
@@ -34,7 +33,7 @@ allprojects {
         maven("https://jitpack.io")
     }
 
-    // 🔥 JADB snapshot fix (normal bağımlılıklar için)
+    // 🔥 normal dependencies için JADB fix
     configurations.all {
         resolutionStrategy.eachDependency {
             if (requested.group == "com.github.vidstige" && requested.name == "jadb") {
@@ -93,10 +92,10 @@ subprojects {
         val cloudstream by configurations
         val implementation by configurations
 
-        // Cloudstream stub
-        cloudstream("com.lagradost:cloudstream3:4.5.5")
+        // Cloudstream stub - güncel sürüm
+        cloudstream("com.lagradost:cloudstream3:4.5.6")
 
-        // Bağımlılıklar
+        // Diğer bağımlılıklar
         implementation(kotlin("stdlib"))
         implementation("com.github.Blatzar:NiceHttp:0.4.13")
         implementation("org.jsoup:jsoup:1.19.1")
