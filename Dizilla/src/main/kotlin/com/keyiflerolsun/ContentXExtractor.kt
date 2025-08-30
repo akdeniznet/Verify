@@ -14,144 +14,70 @@ open class ContentX : ExtractorApi() {
     override val requiresReferer = true
 
     override suspend fun getUrl(
-        url: String,
-        referer: String?,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ) {
-        val extRef = referer ?: ""
-        Log.d("Kekik_${this.name}", "url » $url")
-
-        val iSource = app.get(url, referer = extRef).text
-        
-        // Ana video URL'sini çıkarma
-        val iExtract = Regex("""window\.openPlayer\('([^']+)'""")
-            .find(iSource)
-            ?.groups?.get(1)?.value 
-            ?: throw ErrorLoadingException("iExtract bulunamadı")
-
-        // Altyazıları işleme
-        processSubtitles(iSource, subtitleCallback)
-
-        // Ana video akışını işleme
-        processVideoStream("${mainUrl}/source2.php?v=${iExtract}", extRef, url, callback)
-
-        // Türkçe dublaj varsa işleme
-        processDublajTrack(iSource, extRef, url, callback)
-    }
-
-    /**
-     * Altyazıları işler ve callback'e gönderir
-     */
-    private fun processSubtitles(
-        source: String, 
-        subtitleCallback: (SubtitleFile) -> Unit
-    ) {
-        val subUrls = mutableSetOf<String>()
-        
-        Regex(""""file":"((?:\\\\\"|[^"])+)","label":"((?:\\\\\"|[^"])+)"""")
-            .findAll(source)
-            .forEach { match ->
-                val (subUrlExt, subLangExt) = match.destructured
-
-                val subUrl = subUrlExt
-                    .replace("\\/", "/")
-                    .replace("\\u0026", "&")
-                    .replace("\\", "")
-                
-                val subLang = subLangExt
-                    .replace("\\u0131", "ı")
-                    .replace("\\u0130", "İ")
-                    .replace("\\u00fc", "ü")
-                    .replace("\\u00e7", "ç")
-                    .replace("\\u011f", "ğ")
-                    .replace("\\u015f", "ş")
-
-                if (subUrl in subUrls) return@forEach
-                subUrls.add(subUrl)
-
-                subtitleCallback.invoke(
-                    SubtitleFile(
-                        lang = subLang,
-                        url = fixUrl(subUrl)
-                    )
-                )
-            }
-    }
-
-    /**
-     * Video akışını işler ve ExtractorLink oluşturur
-     */
-    private suspend fun processVideoStream(
-        streamUrl: String,
-        referer: String,
-        originalUrl: String,
-        callback: (ExtractorLink) -> Unit
-    ) {
-        val vidSource = app.get(streamUrl, referer = referer).text
-        
-        val vidExtract = Regex("""file":"([^"]+)""")
-            .find(vidSource)
-            ?.groups?.get(1)?.value 
-            ?: throw ErrorLoadingException("vidExtract bulunamadı")
-        
-        val m3uLink = vidExtract.replace("\\", "")
-
-        createExtractorLink(m3uLink, originalUrl, callback)
-    }
-
-    /**
-     * Türkçe dublaj track'ini işler
-     */
-// ...existing code...
-
-/**
- * ExtractorLink oluşturur ve callback'e gönderir
- */
-private fun createExtractorLink(
     url: String,
-    refererUrl: String,
+    referer: String?,
+    subtitleCallback: (SubtitleFile) -> Unit,
     callback: (ExtractorLink) -> Unit
 ) {
+    val extRef = referer ?: ""
+    Log.d("Kekik_${this.name}", "url » $url")
+
+    val iSource = app.get(url, referer = extRef).text
+    val iExtract = Regex("""window\.openPlayer\('([^']+)'""").find(iSource)!!.groups[1]?.value ?: throw ErrorLoadingException("iExtract is null")
+
+    val subUrls = mutableSetOf<String>()
+    Regex(""""file":"((?:\\\\\"|[^"])+)","label":"((?:\\\\\"|[^"])+)"""").findAll(iSource).forEach {
+        val (subUrlExt, subLangExt) = it.destructured
+
+            val subUrl = subUrlExt.replace("\\/", "/").replace("\\u0026", "&").replace("\\", "")
+            val subLang = subLangExt.replace("\\u0131", "ı").replace("\\u0130", "İ").replace("\\u00fc", "ü").replace("\\u00e7", "ç").replace("\\u011f", "ğ").replace("\\u015f", "ş")
+
+        if (subUrl in subUrls) return@forEach
+        subUrls.add(subUrl)
+
+        subtitleCallback.invoke(
+            SubtitleFile(
+                lang = subLang,
+                url = fixUrl(subUrl)
+            )
+        )
+    }
+
+    val vidSource = app.get("${mainUrl}/source2.php?v=${iExtract}", referer = extRef).text
+    val vidExtract = Regex("""file":"([^"]+)""").find(vidSource)?.groups?.get(1)?.value ?: throw ErrorLoadingException("vidExtract is null")
+    val m3uLink = vidExtract.replace("\\", "")
+
     callback.invoke(
         newExtractorLink(
             source = this.name,
-            name = this.name,
-            url = url,
-            referer = refererUrl,
-            quality = Qualities.Unknown.value,
-            isM3u8 = true,
-            headers = mapOf(
-                "Referer" to refererUrl,
-                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
-            )
-        )
+            name   = this.name,
+            url    = m3uLink,
+            type   = ExtractorLinkType.M3U8
+        ) {
+            headers = mapOf("Referer" to url,
+			"User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0")
+            quality = Qualities.Unknown.value
+        }
     )
-}
 
-// ...existing code...
+    val iDublaj = Regex(""","([^']+)","Türkçe""").find(iSource)?.groups?.get(1)?.value
+    if (iDublaj != null) {
+        val dublajSource = app.get("${mainUrl}/source2.php?v=${iDublaj}", referer = extRef).text
+        val dublajExtract = Regex("""file":"([^"]+)""").find(dublajSource)!!.groups[1]?.value ?: throw ErrorLoadingException("dublajExtract is null")
+        val dublajLink = dublajExtract.replace("\\", "")
 
-    /**
-     * ExtractorLink oluşturur ve callback'e gönderir
-     */
-    private fun createExtractorLink(
-        url: String,
-        refererUrl: String,
-        callback: (ExtractorLink) -> Unit
-    ) {
         callback.invoke(
-            ExtractorLink(
+            newExtractorLink(
                 source = this.name,
-                name = this.name,
-                url = url,
-                referer = refererUrl,
-                quality = Qualities.Unknown.value,
-                isM3u8 = true,
-                headers = mapOf(
-                    "Referer" to refererUrl,
-                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
-                )
-            )
+                name   = this.name,
+                url    = dublajLink,
+                type   = ExtractorLinkType.M3U8
+            ) {
+                headers = mapOf("Referer" to url,
+				"User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0")
+                quality = Qualities.Unknown.value
+            }
         )
     }
+ }
 }
