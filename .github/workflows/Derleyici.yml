@@ -24,16 +24,24 @@ jobs:
   CloudStreamDerleyici:
     runs-on: ubuntu-latest
     steps:
-      - name: "'src' Depo Kontrolü"
+      - name: "src Depo Kontrolü"
         uses: actions/checkout@v4
         with:
-          path: "src"
+          path: src
 
-      - name: "'build' Depo Kontrolü"
+      - name: "build Branchini Kontrol Et"
         uses: actions/checkout@v4
         with:
-          ref: "build"
-          path: "builds"
+          ref: build
+          path: builds
+
+      - name: Derleme ve kopyalama
+        run: |
+          cd $GITHUB_WORKSPACE/src
+          chmod +x gradlew
+          ./gradlew make makePluginsJson
+          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
+          cp build/plugins.json $GITHUB_WORKSPACE/builds
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4
