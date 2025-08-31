@@ -50,9 +50,8 @@ jobs:
           chmod +x ./gradlew
           ./gradlew make makePluginsJson
 
-          # 'builds' klasörünü tamamen sil ve yeniden oluştur
-          rm -rf $GITHUB_WORKSPACE/builds
-          mkdir -p $GITHUB_WORKSPACE/builds
+          # 'builds' klasörünün içini temizle, .git klasörü kalır
+          rm -rf $GITHUB_WORKSPACE/builds/*
 
           # yeni derlenen dosyaları kopyala
           cp $GITHUB_WORKSPACE/src/**/build/*.cs3 $GITHUB_WORKSPACE/builds/ || true
