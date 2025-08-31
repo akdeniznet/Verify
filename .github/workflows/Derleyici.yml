@@ -28,15 +28,18 @@ jobs:
         with:
           path: "src"
 
-      - name: "'build' Branch'ini Kontrol Et"
+      - name: "'build' Branch'ini Kontrol Et ve Hazırla"
         run: |
           # Build branch'inin var olup olmadığını kontrol et
           if git ls-remote --exit-code --heads origin build; then
             echo "Build branch'i mevcut."
           else
             echo "Build branch'i yok, oluşturuluyor..."
+            # Önce main branch'ini checkout et
+            git checkout main
+            # Yeni bir build branch'i oluştur ve boş bir commit ile başlat
             git checkout --orphan build
-            git rm -rf .
+            git reset --hard
             git commit --allow-empty -m "Initial build branch"
             git push origin build
           fi
@@ -63,23 +66,29 @@ jobs:
           ./gradlew make makePluginsJson
 
           # 'builds' klasörünün içini .git dışında tamamen temizle
-          find $GITHUB_WORKSPACE/builds -mindepth 1 ! -name '.git' -exec rm -rf {} + 2>/dev/null || true
+          cd $GITHUB_WORKSPACE/builds
+          find . -mindepth 1 ! -name '.git' ! -name '.git/**' -exec rm -rf {} + 2>/dev/null || true
 
           # yeni derlenen dosyaları kopyala
           find $GITHUB_WORKSPACE/src -name "*.cs3" -exec cp {} $GITHUB_WORKSPACE/builds/ \;
           cp $GITHUB_WORKSPACE/src/build/plugins.json $GITHUB_WORKSPACE/builds/ 2>/dev/null || true
+
+      - name: Git Yapılandırması
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
 
       - name: Değişiklikleri Build Branch'e Gönder
         env:
           AKDENIZ: ${{ secrets.AKDENIZ }}
         run: |
           cd $GITHUB_WORKSPACE/builds
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
           git add -A
           if git diff-index --quiet HEAD; then
             echo "Değişiklik yok, push atlanıyor."
           else
             git commit -m "$GITHUB_SHA 'nın Derlenmesi"
-            git push --force https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }} build
+            git remote set-url origin https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }}
+            git push --force origin build
           fi
