@@ -27,28 +27,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: "src"
-
-      - name: "'build' Branch'ini Kontrol Et ve Hazırla"
-        run: |
-          # Build branch'inin var olup olmadığını kontrol et
-          if git ls-remote --exit-code --heads origin build; then
-            echo "Build branch'i mevcut."
-          else
-            echo "Build branch'i yok, oluşturuluyor..."
-            # Önce main branch'ini checkout et
-            git checkout main
-            # Yeni bir build branch'i oluştur ve boş bir commit ile başlat
-            git checkout --orphan build
-            git reset --hard
-            git commit --allow-empty -m "Initial build branch"
-            git push origin build
-          fi
+          fetch-depth: 0
 
       - name: "'build' Depo Kontrolü"
         uses: actions/checkout@v4
         with:
           ref: "build"
           path: "builds"
+          sparse-checkout: "."
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4
@@ -67,28 +53,29 @@ jobs:
 
           # 'builds' klasörünün içini .git dışında tamamen temizle
           cd $GITHUB_WORKSPACE/builds
-          find . -mindepth 1 ! -name '.git' ! -name '.git/**' -exec rm -rf {} + 2>/dev/null || true
+          # .git klasörü dışındaki her şeyi sil
+          find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} + 2>/dev/null || true
 
           # yeni derlenen dosyaları kopyala
           find $GITHUB_WORKSPACE/src -name "*.cs3" -exec cp {} $GITHUB_WORKSPACE/builds/ \;
           cp $GITHUB_WORKSPACE/src/build/plugins.json $GITHUB_WORKSPACE/builds/ 2>/dev/null || true
 
-      - name: Git Yapılandırması
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-
-      - name: Değişiklikleri Build Branch'e Gönder
+      - name: Değişiklikleri Kontrol Et ve Pushla
         env:
           AKDENIZ: ${{ secrets.AKDENIZ }}
         run: |
           cd $GITHUB_WORKSPACE/builds
+
+          # Git yapılandırması
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+
+          # Değişiklikleri kontrol et
           git add -A
           if git diff-index --quiet HEAD; then
             echo "Değişiklik yok, push atlanıyor."
           else
             git commit -m "$GITHUB_SHA 'nın Derlenmesi"
-            git remote set-url origin https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }}
-            git push --force origin build
+            git remote set-url origin https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }}.git
+            git push origin build
           fi
