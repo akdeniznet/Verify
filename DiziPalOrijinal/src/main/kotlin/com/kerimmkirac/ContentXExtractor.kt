@@ -65,7 +65,7 @@ open class ContentX : ExtractorApi() {
         val m3uLink    = vidExtract.replace("\\", "")
 
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source = this.name,
                 name = this.name,
                 url = m3uLink,
@@ -82,7 +82,7 @@ open class ContentX : ExtractorApi() {
             val dublajLink    = dublajExtract.replace("\\", "")
 
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source = this.name,
                     name = this.name,
                     url = dublajLink,
@@ -166,12 +166,12 @@ open class RapidVid : ExtractorApi() {
 
         // 4) Sonuç callback ile dön
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source = name,
                 name = name,
                 url = decodedUrl,
                 referer = extRef,
-                quality = getQualityFromName(Qualities.Unknown.value.toString()),
+                quality = Qualities.Unknown.value,
                 type = ExtractorLinkType.M3U8
             )
         )
@@ -228,12 +228,12 @@ open class Sobreatsesuyp : ExtractorApi() {
             val videoData = app.post("${mainUrl}/playlist/${item.file.substring(1)}.txt", referer = extRef).text
 
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source = this.name,
                     name = "${this.name} - ${item.title}",
                     url = videoData,
                     referer = extRef,
-                    quality = getQualityFromName(Qualities.Unknown.value.toString()),
+                    quality = Qualities.Unknown.value,
                     type = INFER_TYPE
                 )
             )
@@ -293,12 +293,12 @@ open class TRsTX : ExtractorApi() {
             val m3uLink = mapEntry["videoData"] ?: continue
 
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source = this.name,
                     name = "${this.name} - $title",
                     url = m3uLink,
                     referer = extRef,
-                    quality = getQualityFromName(Qualities.Unknown.value.toString()),
+                    quality = Qualities.Unknown.value,
                     type = INFER_TYPE
                 )
             )
@@ -325,12 +325,12 @@ open class TurboImgz : ExtractorApi() {
         Log.d("kerimmkirac_${this.name}", "videoLink » $videoLink")
 
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source = "${this.name} - " + url.substringBefore("||").uppercase(),
                 name = "${this.name} - " + url.substringBefore("||").uppercase(),
                 url = videoLink,
                 referer = extRef,
-                quality = getQualityFromName(Qualities.Unknown.value.toString()),
+                quality = Qualities.Unknown.value,
                 type = ExtractorLinkType.M3U8
             )
         )
@@ -379,7 +379,7 @@ open class TurkeyPlayer : ExtractorApi() {
             }
             
             callback.invoke(
-                newExtractorLink(
+                ExtractorLink(
                     source = "TurkeyPlayerxBet $lang",
                     name = "TurkeyPlayerxBet $lang",
                     url = fixM3u,
@@ -438,12 +438,12 @@ open class VidMoxy : ExtractorApi() {
         }.toList()
 
         callback.invoke(
-            newExtractorLink(
+            ExtractorLink(
                 source = this.name,
                 name = this.name,
                 url = decoded,
                 referer = mainUrl,
-                quality = getQualityFromName(Qualities.Unknown.value.toString()),
+                quality = Qualities.Unknown.value,
                 type = ExtractorLinkType.M3U8
             )
         )
@@ -512,7 +512,7 @@ open class VidMolyExtractor : ExtractorApi() {
             val m3uLink = match.groupValues[1]
             Log.d("kraptor_$name", "Vidmoly m3uLink[$index] → $m3uLink")
             callback(
-                newExtractorLink(
+                ExtractorLink(
                     source = "VidMoly",
                     name = "VidMoly",
                     url = m3uLink,
