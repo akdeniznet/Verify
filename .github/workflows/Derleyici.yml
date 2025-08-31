@@ -18,60 +18,52 @@ on:
       - "**/*.py"
 
 permissions:
-  contents: write # Git push için gerekli
+  contents: write
 
 jobs:
   CloudStreamDerleyici:
     runs-on: ubuntu-latest
     steps:
-      # Kaynak kodu çek
       - name: "'src' Depo Kontrolü"
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
         with:
           path: "src"
 
-      # Build branch’i çek
       - name: "'build' Depo Kontrolü"
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
         with:
           ref: "build"
           path: "builds"
 
-      # JDK 17 kur
       - name: JDK 17 Ayarla
-        uses: actions/setup-java@v4.6.0
+        uses: actions/setup-java@v4
         with:
           distribution: adopt
           java-version: 17
 
-      # Android SDK kur
       - name: Android SDK Ayarla
-        uses: android-actions/setup-android@v3.2.2
+        uses: android-actions/setup-android@v3
 
-      # Derleme adımı
-      - name: Eklentileri Derle
+      - name: Derleme İşlemi
         run: |
           cd $GITHUB_WORKSPACE/src
           chmod +x ./gradlew
           ./gradlew make makePluginsJson
 
-          # build klasörünü temizle (içindekileri sil)
-          cd $GITHUB_WORKSPACE/builds
-          rm -rf *
+          # build klasörünü temizle (klasör kalıyor, içi boşalıyor)
+          rm -rf $GITHUB_WORKSPACE/builds/*
 
-          # Yeni dosyaları kopyala
-          cp $GITHUB_WORKSPACE/src/**/build/*.cs3 $GITHUB_WORKSPACE/builds || true
-          cp $GITHUB_WORKSPACE/src/build/plugins.json $GITHUB_WORKSPACE/builds || true
+          # yeni derlenen dosyaları kopyala
+          cp $GITHUB_WORKSPACE/src/**/build/*.cs3 $GITHUB_WORKSPACE/builds/ || true
+          cp $GITHUB_WORKSPACE/src/build/plugins.json $GITHUB_WORKSPACE/builds/ || true
 
-      # Build branch’e push et
-      - name: Derlemeleri Build Branch’e Gönder (Sadece Değişiklik Varsa)
+      - name: Değişiklikleri Build Branch'e Gönder
         env:
           AKDENIZ: ${{ secrets.AKDENIZ }}
         run: |
           cd $GITHUB_WORKSPACE/builds
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
-
           git add -A
           if git diff-index --quiet HEAD; then
             echo "No changes detected, skipping push."
