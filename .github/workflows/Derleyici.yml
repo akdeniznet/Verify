@@ -24,70 +24,55 @@ jobs:
   CloudStreamDerleyici:
     runs-on: ubuntu-latest
     steps:
-      # Kaynak kod (master branch)
+      # Kaynak kodu çek
       - name: "'src' Depo Kontrolü"
         uses: actions/checkout@v4.2.2
         with:
           path: "src"
 
-      # Build branch (çıktıların tutulduğu repo)
+      # Build branch’i çek
       - name: "'build' Depo Kontrolü"
         uses: actions/checkout@v4.2.2
         with:
-          ref: "builds"
+          ref: "build"
           path: "builds"
 
-      # JDK ayarı
+      # JDK 17 kur
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
         with:
           distribution: adopt
           java-version: 17
 
-      # Android SDK ayarı
+      # Android SDK kur
       - name: Android SDK Ayarla
         uses: android-actions/setup-android@v3.2.2
 
-      # Eklentileri derle
+      # Derleme adımı
       - name: Eklentileri Derle
         run: |
           cd $GITHUB_WORKSPACE/src
           chmod +x ./gradlew
           ./gradlew make makePluginsJson
 
-          # build klasörünü sıfırla
-          rm -rf $GITHUB_WORKSPACE/builds/*
-          mkdir -p $GITHUB_WORKSPACE/builds
+          # build klasörünü temizle (içindekileri sil)
+          cd $GITHUB_WORKSPACE/builds
+          rm -rf *
 
-          # Derlenen dosyaları kopyala
-          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
-          cp build/plugins.json $GITHUB_WORKSPACE/builds
+          # Yeni dosyaları kopyala
+          cp $GITHUB_WORKSPACE/src/**/build/*.cs3 $GITHUB_WORKSPACE/builds || true
+          cp $GITHUB_WORKSPACE/src/build/plugins.json $GITHUB_WORKSPACE/builds || true
 
       # Build branch’e push et
       - name: Derlemeleri Build Branch’e Gönder (Sadece Değişiklik Varsa)
         env:
-          AKDENIZ: ${{ secrets.AKDENIZ }} # Repo secrets'ta token olmalı
+          AKDENIZ: ${{ secrets.AKDENIZ }}
         run: |
           cd $GITHUB_WORKSPACE/builds
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
 
-          # Git init değilse başlat
-          if [ ! -d .git ]; then
-            git init
-            git remote add origin https://github.com/${{ github.repository }}.git
-          fi
-
-          # build branch varsa checkout et yoksa oluştur
-          if git ls-remote --exit-code --heads origin build; then
-            git fetch origin build
-            git checkout build
-          else
-            git checkout -b build
-          fi
-
-          # Tüm içerikleri commit et
-          git add -f *
+          git add -A
           if git diff-index --quiet HEAD; then
             echo "No changes detected, skipping push."
           else
