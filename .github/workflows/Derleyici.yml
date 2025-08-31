@@ -28,6 +28,19 @@ jobs:
         with:
           path: "src"
 
+      - name: "'build' Branch'ini Kontrol Et"
+        run: |
+          # Build branch'inin var olup olmadığını kontrol et
+          if git ls-remote --exit-code --heads origin build; then
+            echo "Build branch'i mevcut."
+          else
+            echo "Build branch'i yok, oluşturuluyor..."
+            git checkout --orphan build
+            git rm -rf .
+            git commit --allow-empty -m "Initial build branch"
+            git push origin build
+          fi
+
       - name: "'build' Depo Kontrolü"
         uses: actions/checkout@v4
         with:
