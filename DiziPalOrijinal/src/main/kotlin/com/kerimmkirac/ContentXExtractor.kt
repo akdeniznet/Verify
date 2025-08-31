@@ -71,7 +71,7 @@ open class ContentX : ExtractorApi() {
                 url = m3uLink,
                 referer = url,
                 quality = Qualities.Unknown.value,
-                type = ExtractorLinkType.M3U8
+                isM3u8 = true
             )
         )
 
@@ -88,7 +88,7 @@ open class ContentX : ExtractorApi() {
                     url = dublajLink,
                     referer = url,
                     quality = Qualities.Unknown.value,
-                    type = ExtractorLinkType.M3U8
+                    isM3u8 = true
                 )
             )
         }
@@ -172,7 +172,7 @@ open class RapidVid : ExtractorApi() {
                 url = decodedUrl,
                 referer = extRef,
                 quality = Qualities.Unknown.value,
-                type = ExtractorLinkType.M3U8
+                isM3u8 = true
             )
         )
     }
@@ -234,7 +234,7 @@ open class Sobreatsesuyp : ExtractorApi() {
                     url = videoData,
                     referer = extRef,
                     quality = Qualities.Unknown.value,
-                    type = INFER_TYPE
+                    isM3u8 = true
                 )
             )
         }
@@ -299,7 +299,7 @@ open class TRsTX : ExtractorApi() {
                     url = m3uLink,
                     referer = extRef,
                     quality = Qualities.Unknown.value,
-                    type = INFER_TYPE
+                    isM3u8 = true
                 )
             )
         }
@@ -331,7 +331,7 @@ open class TurboImgz : ExtractorApi() {
                 url = videoLink,
                 referer = extRef,
                 quality = Qualities.Unknown.value,
-                type = ExtractorLinkType.M3U8
+                isM3u8 = true
             )
         )
     }
@@ -385,7 +385,7 @@ open class TurkeyPlayer : ExtractorApi() {
                     url = fixM3u,
                     referer = extRef,
                     quality = Qualities.Unknown.value,
-                    type = ExtractorLinkType.M3U8
+                    isM3u8 = true
                 )
             )
         }
@@ -444,7 +444,7 @@ open class VidMoxy : ExtractorApi() {
                 url = decoded,
                 referer = mainUrl,
                 quality = Qualities.Unknown.value,
-                type = ExtractorLinkType.M3U8
+                isM3u8 = true
             )
         )
     }
@@ -518,7 +518,7 @@ open class VidMolyExtractor : ExtractorApi() {
                     url = m3uLink,
                     referer = "https://vidmoly.to/",
                     quality = Qualities.Unknown.value,
-                    type = ExtractorLinkType.M3U8
+                    isM3u8 = true
                 )
             )
         }
