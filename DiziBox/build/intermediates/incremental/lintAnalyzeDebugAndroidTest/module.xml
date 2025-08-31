@@ -1,6 +1,6 @@
 <lint-module
     format="1"
-    dir="C:\Users\YKB\Desktop\akademi\DiziBox"
+    dir="C:\Users\YKB\Desktop\MASAUSTU\Kekik-cloudstream-master\netTV\Verify\DiziBox"
     name=":DiziBox"
     type="LIBRARY"
     maven="CloudstreamPlugins:DiziBox:22"
