@@ -1,5 +1,5 @@
 # Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
-name: Derleyici
+name: CloudStream Derleyici
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
@@ -21,48 +21,49 @@ permissions:
   contents: write # Git push için gerekli
 
 jobs:
-  Surum:
+  CloudStreamDerleyici:
     runs-on: ubuntu-latest
     steps:
+      # Kaynak kod (master branch)
       - name: "'src' Depo Kontrolü"
         uses: actions/checkout@v4.2.2
         with:
           path: "src"
 
+      # Build branch (çıktıların tutulduğu repo)
       - name: "'build' Depo Kontrolü"
         uses: actions/checkout@v4.2.2
         with:
           ref: "builds"
           path: "builds"
 
+      # JDK ayarı
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4.6.0
         with:
           distribution: adopt
           java-version: 17
 
+      # Android SDK ayarı
       - name: Android SDK Ayarla
         uses: android-actions/setup-android@v3.2.2
 
+      # Eklentileri derle
       - name: Eklentileri Derle
         run: |
           cd $GITHUB_WORKSPACE/src
           chmod +x ./gradlew
           ./gradlew make makePluginsJson
 
-          # Versiyonlu derleme adı (SHA + tarih)
-          VERSION=$(date +%Y%m%d%H%M%S)
-          mkdir -p $GITHUB_WORKSPACE/builds/$VERSION
+          # build klasörünü sıfırla
+          rm -rf $GITHUB_WORKSPACE/builds/*
+          mkdir -p $GITHUB_WORKSPACE/builds
 
-          # Derlenen .cs3 ve plugins.json dosyalarını versiyon klasörüne kopyala
-          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds/$VERSION
-          cp build/plugins.json $GITHUB_WORKSPACE/builds/$VERSION
+          # Derlenen dosyaları kopyala
+          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
+          cp build/plugins.json $GITHUB_WORKSPACE/builds
 
-      - name: Eski Derlemeleri Temizle (Max 5)
-        run: |
-          cd $GITHUB_WORKSPACE/builds
-          ls -1d [0-9]* | sort | head -n -5 | xargs -r rm -rf
-
+      # Build branch’e push et
       - name: Derlemeleri Build Branch’e Gönder (Sadece Değişiklik Varsa)
         env:
           AKDENIZ: ${{ secrets.AKDENIZ }} # Repo secrets'ta token olmalı
@@ -85,10 +86,11 @@ jobs:
             git checkout -b build
           fi
 
+          # Tüm içerikleri commit et
           git add -f *
           if git diff-index --quiet HEAD; then
             echo "No changes detected, skipping push."
           else
             git commit -m "$GITHUB_SHA 'nın Derlenmesi"
-            git push https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }} build
+            git push --force https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }} build
           fi
