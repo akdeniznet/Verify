@@ -24,24 +24,16 @@ jobs:
   CloudStreamDerleyici:
     runs-on: ubuntu-latest
     steps:
-      - name: "src Depo Kontrolü"
+      - name: "'src' Depo Kontrolü"
         uses: actions/checkout@v4
         with:
-          path: src
+          path: "src"
 
-      - name: "build Branchini Kontrol Et"
+      - name: "'build' Depo Kontrolü"
         uses: actions/checkout@v4
         with:
-          ref: build
-          path: builds
-
-      - name: Derleme ve kopyalama
-        run: |
-          cd $GITHUB_WORKSPACE/src
-          chmod +x gradlew
-          ./gradlew make makePluginsJson
-          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
-          cp build/plugins.json $GITHUB_WORKSPACE/builds
+          ref: "build"
+          path: "builds"
 
       - name: JDK 17 Ayarla
         uses: actions/setup-java@v4
@@ -58,8 +50,9 @@ jobs:
           chmod +x ./gradlew
           ./gradlew make makePluginsJson
 
-          # build klasörünü temizle (klasör kalıyor, içi boşalıyor)
-          rm -rf $GITHUB_WORKSPACE/builds/*
+          # 'builds' klasörünü tamamen sil ve yeniden oluştur
+          rm -rf $GITHUB_WORKSPACE/builds
+          mkdir -p $GITHUB_WORKSPACE/builds
 
           # yeni derlenen dosyaları kopyala
           cp $GITHUB_WORKSPACE/src/**/build/*.cs3 $GITHUB_WORKSPACE/builds/ || true
