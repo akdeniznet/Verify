@@ -13,6 +13,41 @@ open class ContentX : ExtractorApi() {
     override val mainUrl         = "https://contentx.me"
     override val requiresReferer = true
 
+    // Her iki versiyonda da çalışan akıllı fonksiyon
+    private fun createExtractorLink(
+        source: String,
+        name: String,
+        url: String,
+        referer: String,
+        quality: Int,
+        isM3u8: Boolean,
+        headers: Map<String, String>
+    ): ExtractorLink {
+        return try {
+            // Önce yeni yöntemi dene (yerel için)
+            ExtractorLink(
+                source = source,
+                name = name,
+                url = url,
+                referer = referer,
+                quality = quality,
+                isM3u8 = isM3u8,
+                headers = headers
+            )
+        } catch (e: Exception) {
+            // Yeni yöntem başarısız olursa eski yöntemi kullan (GitHub için)
+            newExtractorLink(
+                source = source,
+                name = name,
+                url = url,
+                type = if (isM3u8) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
+            ) {
+                this.headers = headers
+                this.quality = quality
+            }
+        }
+    }
+
     override suspend fun getUrl(
         url: String,
         referer: String?,
@@ -51,20 +86,19 @@ open class ContentX : ExtractorApi() {
             ?: throw ErrorLoadingException("vidExtract is null")
         val m3uLink = vidExtract.replace("\\", "")
 
-        // GitHub için düzeltilmiş kısım (newExtractorLink kullanıyor)
+        // Her iki ortamda çalışan ortak fonksiyon
         callback.invoke(
-            newExtractorLink(
-                source = this.name,
-                name   = this.name,
-                url    = m3uLink,
-                type   = ExtractorLinkType.M3U8
-            ) {
+            createExtractorLink(
+                source = name,
+                name = name,
+                url = m3uLink,
+                referer = url,
+                quality = Qualities.Unknown.value,
+                isM3u8 = true,
                 headers = mapOf(
-                    "Referer" to url,
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
                 )
-                quality = Qualities.Unknown.value
-            }
+            )
         )
 
         Log.d("ContentX_Debug", "url » $url")
@@ -77,20 +111,19 @@ open class ContentX : ExtractorApi() {
                     ?: throw ErrorLoadingException("dublajExtract is null")
                 val dublajLink = dublajExtract.replace("\\", "")
 
-                // GitHub için düzeltilmiş kısım (newExtractorLink kullanıyor)
+                // Her iki ortamda çalışan ortak fonksiyon
                 callback.invoke(
-                    newExtractorLink(
-                        source = "${this.name} Türkçe Dublaj",
-                        name   = "${this.name} Türkçe Dublaj",
-                        url    = dublajLink,
-                        type   = ExtractorLinkType.M3U8
-                    ) {
+                    createExtractorLink(
+                        source = "$name Türkçe Dublaj",
+                        name = "$name Türkçe Dublaj", 
+                        url = dublajLink,
+                        referer = url,
+                        quality = Qualities.Unknown.value,
+                        isM3u8 = true,
                         headers = mapOf(
-                            "Referer" to url,
                             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
                         )
-                        quality = Qualities.Unknown.value
-                    }
+                    )
                 )
             } catch (e: Exception) {
                 Log.e("ContentX_Error", "Dublaj linki alınırken hata: ${e.message}")
