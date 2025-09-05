@@ -51,24 +51,25 @@ open class ContentX : ExtractorApi() {
             ?: throw ErrorLoadingException("vidExtract is null")
         val m3uLink = vidExtract.replace("\\", "")
 
+        // GitHub için düzeltilmiş kısım (newExtractorLink kullanıyor)
         callback.invoke(
-            ExtractorLink(
-                source = name,
-                name = name,
-                url = m3uLink,
-                referer = url,
-                quality = Qualities.Unknown.value,
-                isM3u8 = true,
+            newExtractorLink(
+                source = this.name,
+                name   = this.name,
+                url    = m3uLink,
+                type   = ExtractorLinkType.M3U8
+            ) {
                 headers = mapOf(
+                    "Referer" to url,
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
                 )
-            )
+                quality = Qualities.Unknown.value
+            }
         )
 
         Log.d("ContentX_Debug", "url » $url")
         
-        // Dublaj linki için daha güvenilir regex
-        val iDublaj = Regex(""""([^"]+)","Türkçe"""").find(iSource)?.groups?.get(1)?.value
+        val iDublaj = Regex("""","([^']+)","Türkçe""").find(iSource)?.groups?.get(1)?.value
         if (iDublaj != null) {
             try {
                 val dublajSource = app.get("${mainUrl}/source2.php?v=${iDublaj}", referer = extRef).text
@@ -76,22 +77,23 @@ open class ContentX : ExtractorApi() {
                     ?: throw ErrorLoadingException("dublajExtract is null")
                 val dublajLink = dublajExtract.replace("\\", "")
 
+                // GitHub için düzeltilmiş kısım (newExtractorLink kullanıyor)
                 callback.invoke(
-                    ExtractorLink(
-                        source = "$name",
-                        name = "$name", 
-                        url = dublajLink,
-                        referer = url,
-                        quality = Qualities.Unknown.value,
-                        isM3u8 = true,
+                    newExtractorLink(
+                        source = "${this.name} Türkçe Dublaj",
+                        name   = "${this.name} Türkçe Dublaj",
+                        url    = dublajLink,
+                        type   = ExtractorLinkType.M3U8
+                    ) {
                         headers = mapOf(
+                            "Referer" to url,
                             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Norton/124.0.0.0"
                         )
-                    )
+                        quality = Qualities.Unknown.value
+                    }
                 )
             } catch (e: Exception) {
                 Log.e("ContentX_Error", "Dublaj linki alınırken hata: ${e.message}")
-                // Hata durumunda sadece normal linki kullanmaya devam et
             }
         }
     }
