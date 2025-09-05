@@ -1,6 +1,6 @@
 {
-  "name": "Turkish Providers Repository | @KekikAkademi",
-  "description": "Türkçe içerikli eklenti havuzu",
+  "name": "akdeniznet",
+  "description": "Türkçe içerikli",
   "manifestVersion": 1,
   "pluginLists": [
     "https://raw.githubusercontent.com/akdeniznet/Verify/build/plugins.json"
