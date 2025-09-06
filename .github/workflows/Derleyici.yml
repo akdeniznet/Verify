@@ -32,7 +32,7 @@ jobs:
       - name: "'build' Depo Kontrolü"
         uses: actions/checkout@v4
         with:
-          ref: "build"
+          ref: "builds"
           path: "builds"
           sparse-checkout: "."
 
