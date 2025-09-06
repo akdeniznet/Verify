@@ -77,5 +77,5 @@ jobs:
           else
             git commit -m "$GITHUB_SHA 'nın Derlenmesi"
             git remote set-url origin https://x-access-token:${AKDENIZ}@github.com/${{ github.repository }}.git
-            git push origin build
+            git push origin builds
           fi
