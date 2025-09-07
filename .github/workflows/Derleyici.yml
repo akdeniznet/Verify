@@ -48,12 +48,14 @@ jobs:
       - name: Derleme İşlemi
         run: |
           cd $GITHUB_WORKSPACE/src
+          rm $GITHUB_WORKSPACE/builds/*.cs3 || true
           chmod +x ./gradlew
           ./gradlew make makePluginsJson
 
           # 'builds' klasörünün içini .git dışında tamamen temizle
           cd $GITHUB_WORKSPACE/builds
           # .git klasörü dışındaki her şeyi sil
+          rm $GITHUB_WORKSPACE/builds/*.cs3 || true
           find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} + 2>/dev/null || true
 
           # yeni derlenen dosyaları kopyala
