@@ -1,8 +1,8 @@
 {
   "name": "akdeniznet",
-  "description": "Türkçe içerikli eklenti havuzu",
+  "description": "Türkçe içerikli",
   "manifestVersion": 1,
   "pluginLists": [
-    "https://raw.githubusercontent.com/akdeniznet/Verify/build/plugins.json"
+    "https://raw.githubusercontent.com/akdeniznet/Verify/builds/plugins.json"
   ]
 }
