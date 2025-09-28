@@ -23,7 +23,7 @@ open class ContentX : ExtractorApi() {
             val (subUrl, subLang) = it.destructured
 
 			if (subUrl in subUrls) { return@forEach }
-            subUrls.add(subUrl)
+ 			subUrls.add(subUrl)
 
             subtitleCallback.invoke(
                 SubtitleFile(
