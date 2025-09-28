@@ -6,10 +6,10 @@ import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.extractors.Vidmoly
 import com.lagradost.cloudstream3.utils.ExtractorApi
-// import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
-// import com.lagradost.cloudstream3.utils.newExtractorLink
+import com.lagradost.cloudstream3.utils.newExtractorLink
 
 class VidmolyNet : ExtractorApi() {
 
@@ -34,14 +34,15 @@ class VidmolyNet : ExtractorApi() {
         Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
 
         callback.invoke(
-            ExtractorLink(
-                    source  = this.name,
-                    name    = this.name,
-                    url     = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
-                    // referer = if (m3uLink.contains("disk.yandex")) "" else extRef,
-                    quality = Qualities.Unknown.value,
-                    // type    = INFER_TYPE
-                )
+            newExtractorLink(
+                source = this.name,
+                name = this.name,
+                url = m3uLink,
+                type = ExtractorLinkType.M3U8
+            ) {
+                this.referer = mainUrl
+                this.quality = Qualities.Unknown.value
+            }
         )
     }
 }
