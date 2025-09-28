@@ -51,15 +51,14 @@ open class MixTiger : ExtractorApi() {
             Log.d("Kekik_${this.name}", "m3uLink » $m3uLink")
 
             callback.invoke(
-                newExtractorLink(
-                    source  = this.name,
-                    name    = this.name,
-                    url     = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
-                    type    = INFER_TYPE
-                ) {
-                    this.referer = if (m3uLink.contains("disk.yandex")) "" else extRef
-                    this.quality = Qualities.Unknown.value
-                }
+                ExtractorLink(
+                    source = this.name,
+                    name = this.name,
+                    url = m3uLink ?: throw ErrorLoadingException("m3u link not found"),
+                    referer = if (m3uLink.contains("disk.yandex")) "" else extRef,
+                    quality = Qualities.Unknown.value,
+                    type = INFER_TYPE
+                )
             )
         }
     }
